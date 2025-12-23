@@ -4,1133 +4,244 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FluxShift | USDC Cross-Chain Bridge</title>
-  <meta name="description" content="Transfira USDC entre blockchains de forma rápida e segura">
-  <meta name="keywords" content="USDC, bridge, cross-chain, crypto, blockchain, Circle, CCTP">
-  <meta property="og:title" content="FluxShift - USDC Bridge">
-  <meta property="og:description" content="Transfira USDC entre blockchains de forma rápida e segura">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://fluxshift.app">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    :root {
-      --bg-primary: #030306;
-      --bg-secondary: #0a0a10;
-      --bg-card: #0d0d14;
-      --bg-input: #111118;
-      --bg-hover: #16161f;
-      --border: #1a1a28;
-      --border-active: #2d2d45;
-      --text-primary: #ffffff;
-      --text-secondary: #8585a0;
-      --text-muted: #4a4a60;
-      --accent-primary: #00e5ff;
-      --accent-secondary: #6366f1;
-      --accent-tertiary: #22c55e;
-      --error: #ef4444;
-      --warning: #f59e0b;
-      --success: #22c55e;
-      --gradient-main: linear-gradient(135deg, #00e5ff 0%, #6366f1 50%, #22c55e 100%);
-      --gradient-accent: linear-gradient(135deg, #00e5ff 0%, #6366f1 100%);
-      --shadow-glow: 0 0 100px rgba(0, 229, 255, 0.12);
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --radius-xl: 24px;
-    }
-
-    html { scroll-behavior: smooth; }
-    
-    body {
-      font-family: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      min-height: 100vh;
-      overflow-x: hidden;
-      line-height: 1.5;
-    }
-
-    /* ===== BACKGROUND ===== */
-    .bg-effects {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-    }
-
-    .bg-gradient {
-      position: absolute;
-      width: 200%;
-      height: 200%;
-      top: -50%;
-      left: -50%;
-      background: 
-        radial-gradient(ellipse at 15% 15%, rgba(0, 229, 255, 0.07) 0%, transparent 45%),
-        radial-gradient(ellipse at 85% 85%, rgba(99, 102, 241, 0.07) 0%, transparent 45%),
-        radial-gradient(ellipse at 50% 100%, rgba(34, 197, 94, 0.04) 0%, transparent 35%);
-      animation: bgFloat 25s ease-in-out infinite;
-    }
-
-    @keyframes bgFloat {
-      0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
-      33% { transform: translate(1%, -1%) rotate(0.5deg) scale(1.02); }
-      66% { transform: translate(-1%, 1%) rotate(-0.5deg) scale(0.98); }
-    }
-
-    .bg-grid {
-      position: absolute;
-      inset: 0;
-      background-image: 
-        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-      background-size: 80px 80px;
-      mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
-    }
-
-    .particles { position: absolute; inset: 0; }
-    .particle {
-      position: absolute;
-      background: var(--accent-primary);
-      border-radius: 50%;
-      opacity: 0;
-      animation: particleFade 8s ease-in-out infinite;
-    }
-    @keyframes particleFade {
-      0%, 100% { opacity: 0; transform: translateY(0) scale(0.5); }
-      50% { opacity: 0.35; transform: translateY(-50px) scale(1); }
-    }
-
-    /* ===== LAYOUT ===== */
-    .app-container {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ===== HEADER ===== */
-    .header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-      padding: 0.875rem 1.5rem;
-      background: rgba(3, 3, 6, 0.88);
-      backdrop-filter: blur(24px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .header-inner {
-      max-width: 1400px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: var(--text-primary);
-    }
-
-    .logo-icon {
-      width: 42px;
-      height: 42px;
-      background: var(--gradient-main);
-      border-radius: var(--radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.35rem;
-      box-shadow: 0 0 30px rgba(0, 229, 255, 0.3);
-    }
-
-    .logo-text {
-      font-size: 1.35rem;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-    }
-
-    .logo-text span {
-      background: var(--gradient-accent);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 0.875rem;
-    }
-
-    .server-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 14px;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--text-muted);
-      transition: all 0.3s;
-    }
-
-    .status-dot.online {
-      background: var(--success);
-      box-shadow: 0 0 12px var(--success);
-      animation: statusPulse 2s ease-in-out infinite;
-    }
-
-    .status-dot.offline { background: var(--error); }
-    .status-dot.checking { background: var(--warning); animation: statusPulse 1s ease-in-out infinite; }
-
-    @keyframes statusPulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.6; transform: scale(1.15); }
-    }
-
-    .wallet-btn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 18px;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      color: var(--text-primary);
-      font-family: inherit;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .wallet-btn:hover {
-      border-color: var(--accent-primary);
-      background: rgba(0, 229, 255, 0.05);
-    }
-
-    .wallet-btn.connected {
-      background: rgba(34, 197, 94, 0.08);
-      border-color: rgba(34, 197, 94, 0.25);
-    }
-
-    .wallet-btn.connected::before {
-      content: '';
-      width: 9px;
-      height: 9px;
-      background: var(--success);
-      border-radius: 50%;
-      animation: statusPulse 2s ease-in-out infinite;
-    }
-
-    /* ===== MAIN ===== */
-    .main-content {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 7rem 1.25rem 2.5rem;
-    }
-
-    /* ===== BRIDGE CARD ===== */
-    .bridge-card {
-      width: 100%;
-      max-width: 460px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      overflow: hidden;
-      box-shadow: 
-        0 0 0 1px rgba(255,255,255,0.02),
-        0 25px 80px rgba(0,0,0,0.5),
-        var(--shadow-glow);
-    }
-
-    .card-header {
-      padding: 1.35rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(255,255,255,0.01);
-    }
-
-    .card-title {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      font-size: 1.2rem;
-      font-weight: 700;
-    }
-
-    .usdc-logo { width: 30px; height: 30px; }
-
-    .network-badge {
-      padding: 5px 11px;
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid rgba(245, 158, 11, 0.2);
-      border-radius: var(--radius-sm);
-      font-size: 0.65rem;
-      font-weight: 700;
-      color: var(--warning);
-      text-transform: uppercase;
-      letter-spacing: 0.7px;
-    }
-
-    .card-body { padding: 1.5rem; }
-
-    /* ===== FORM ===== */
-    .form-group { margin-bottom: 1.1rem; }
-
-    .form-label {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .balance-display {
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--text-primary);
-      font-weight: 500;
-    }
-
-    .select-wrapper { position: relative; }
-
-    .chain-select {
-      width: 100%;
-      padding: 0.95rem 1.1rem;
-      padding-right: 2.75rem;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      color: var(--text-primary);
-      font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      appearance: none;
-      transition: all 0.25s ease;
-    }
-
-    .chain-select:hover { border-color: var(--border-active); }
-    .chain-select:focus {
-      outline: none;
-      border-color: var(--accent-primary);
-      box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.08);
-    }
-    .chain-select:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .select-arrow {
-      position: absolute;
-      right: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-muted);
-      pointer-events: none;
-      font-size: 0.75rem;
-    }
-
-    /* ===== SWAP ===== */
-    .swap-container {
-      display: flex;
-      justify-content: center;
-      margin: -0.35rem 0 0.65rem;
-      position: relative;
-      z-index: 10;
-    }
-
-    .swap-btn {
-      width: 44px;
-      height: 44px;
-      background: var(--bg-primary);
-      border: 2px solid var(--border);
-      border-radius: var(--radius-md);
-      color: var(--text-secondary);
-      font-size: 1.1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .swap-btn:hover {
-      border-color: var(--accent-primary);
-      color: var(--accent-primary);
-      transform: rotate(180deg);
-    }
-    .swap-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
-
-    /* ===== AMOUNT ===== */
-    .amount-container { position: relative; }
-
-    .amount-input {
-      width: 100%;
-      padding: 1.1rem;
-      padding-right: 125px;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      color: var(--text-primary);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1.4rem;
-      font-weight: 600;
-      transition: all 0.25s ease;
-    }
-
-    .amount-input:focus {
-      outline: none;
-      border-color: var(--accent-primary);
-      box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.08);
-    }
-    .amount-input::placeholder { color: var(--text-muted); font-weight: 400; }
-    .amount-input:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .amount-actions {
-      position: absolute;
-      right: 0.875rem;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .max-btn {
-      padding: 5px 9px;
-      background: rgba(0, 229, 255, 0.1);
-      border: none;
-      border-radius: 6px;
-      color: var(--accent-primary);
-      font-family: inherit;
-      font-size: 0.65rem;
-      font-weight: 700;
-      cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      transition: background 0.2s;
-    }
-    .max-btn:hover { background: rgba(0, 229, 255, 0.18); }
-    .max-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
-    .token-badge {
-      padding: 7px 11px;
-      background: var(--accent-secondary);
-      border-radius: 7px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: white;
-    }
-
-    /* ===== PROGRESS ===== */
-    .progress-section {
-      padding: 1.25rem;
-      background: rgba(0, 229, 255, 0.025);
-      border: 1px solid rgba(0, 229, 255, 0.08);
-      border-radius: var(--radius-lg);
-      margin-bottom: 1.1rem;
-      animation: fadeSlideIn 0.35s ease-out;
-    }
-
-    @keyframes fadeSlideIn {
-      from { opacity: 0; transform: translateY(-8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .progress-bar {
-      height: 5px;
-      background: var(--bg-input);
-      border-radius: 3px;
-      overflow: hidden;
-      margin-bottom: 1.25rem;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: var(--gradient-main);
-      border-radius: 3px;
-      transition: width 0.5s ease-out;
-    }
-
-    .progress-steps { display: flex; justify-content: space-between; }
-
-    .progress-step {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .step-indicator {
-      width: 34px;
-      height: 34px;
-      background: var(--bg-input);
-      border: 2px solid var(--border);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      font-weight: 700;
-      transition: all 0.3s ease;
-    }
-
-    .progress-step.active .step-indicator {
-      border-color: var(--accent-primary);
-      background: rgba(0, 229, 255, 0.12);
-      color: var(--accent-primary);
-      animation: stepPulse 1.3s ease-in-out infinite;
-    }
-
-    .progress-step.completed .step-indicator {
-      background: var(--success);
-      border-color: var(--success);
-      color: var(--bg-primary);
-    }
-
-    @keyframes stepPulse {
-      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.35); }
-      50% { transform: scale(1.06); box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); }
-    }
-
-    .step-label {
-      font-size: 0.68rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-    .progress-step.active .step-label,
-    .progress-step.completed .step-label { color: var(--text-primary); }
-
-    /* ===== SUCCESS ===== */
-    .success-section {
-      text-align: center;
-      padding: 2.25rem 1.25rem;
-      animation: fadeSlideIn 0.4s ease-out;
-    }
-
-    .success-icon {
-      width: 85px;
-      height: 85px;
-      background: var(--success);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.6rem;
-      margin: 0 auto 1.35rem;
-      animation: successPop 0.55s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-      box-shadow: 0 0 50px rgba(34, 197, 94, 0.35);
-    }
-
-    @keyframes successPop {
-      0% { transform: scale(0) rotate(-180deg); }
-      60% { transform: scale(1.15) rotate(8deg); }
-      100% { transform: scale(1) rotate(0); }
-    }
-
-    .success-section h3 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--success);
-      margin-bottom: 0.45rem;
-    }
-
-    .success-section p {
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-      margin-bottom: 1.35rem;
-    }
-
-    .tx-links {
-      display: flex;
-      flex-direction: column;
-      gap: 9px;
-      margin-bottom: 1.35rem;
-    }
-
-    .tx-link {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      padding: 11px 18px;
-      background: rgba(0, 229, 255, 0.06);
-      border: 1px solid rgba(0, 229, 255, 0.12);
-      border-radius: var(--radius-md);
-      color: var(--accent-primary);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      text-decoration: none;
-      transition: all 0.25s ease;
-    }
-    .tx-link:hover { background: rgba(0, 229, 255, 0.12); transform: translateY(-2px); }
-
-    /* ===== ERROR ===== */
-    .error-message {
-      padding: 1rem 1.1rem;
-      background: rgba(239, 68, 68, 0.06);
-      border: 1px solid rgba(239, 68, 68, 0.15);
-      border-radius: var(--radius-md);
-      color: var(--error);
-      font-size: 0.88rem;
-      text-align: center;
-      margin-bottom: 1.1rem;
-      animation: shake 0.45s ease-out;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-5px); }
-      40%, 80% { transform: translateX(5px); }
-    }
-
-    /* ===== BUTTONS ===== */
-    .primary-btn {
-      width: 100%;
-      padding: 1.15rem;
-      background: var(--gradient-main);
-      border: none;
-      border-radius: var(--radius-lg);
-      color: var(--bg-primary);
-      font-family: inherit;
-      font-size: 1.05rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: all 0.3s ease;
-    }
-
-    .primary-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 45px rgba(0, 229, 255, 0.28);
-    }
-    .primary-btn:active:not(:disabled) { transform: translateY(0); }
-    .primary-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-
-    .secondary-btn {
-      width: 100%;
-      padding: 1.15rem;
-      background: var(--bg-input);
-      border: 2px solid var(--border);
-      border-radius: var(--radius-lg);
-      color: var(--text-primary);
-      font-family: inherit;
-      font-size: 1.05rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.25s ease;
-    }
-    .secondary-btn:hover { border-color: var(--accent-primary); }
-
-    .spinner {
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(3, 3, 6, 0.2);
-      border-top-color: var(--bg-primary);
-      border-radius: 50%;
-      animation: spin 0.75s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ===== CONNECT ===== */
-    .connect-prompt {
-      text-align: center;
-      padding: 2.75rem 1.25rem;
-    }
-
-    .connect-icon {
-      font-size: 4.25rem;
-      margin-bottom: 1.1rem;
-      animation: floatBounce 3.5s ease-in-out infinite;
-    }
-    @keyframes floatBounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-14px); }
-    }
-
-    .connect-prompt h3 {
-      font-size: 1.3rem;
-      font-weight: 700;
-      margin-bottom: 0.65rem;
-    }
-
-    .connect-prompt p {
-      color: var(--text-secondary);
-      font-size: 0.95rem;
-      line-height: 1.55;
-      margin-bottom: 1.75rem;
-    }
-
-    /* ===== FOOTER ===== */
-    .card-footer {
-      padding: 0.95rem 1.5rem;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      background: rgba(0, 0, 0, 0.25);
-    }
-
-    .card-footer a {
-      color: var(--accent-primary);
-      text-decoration: none;
-      font-weight: 500;
-    }
-    .card-footer a:hover { text-decoration: underline; }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 600px) {
-      .header { padding: 0.75rem 1rem; }
-      .logo-text { display: none; }
-      .server-status span:last-child { display: none; }
-      .main-content { padding: 5.5rem 1rem 2rem; }
-      .bridge-card { border-radius: 20px; }
-      .card-body { padding: 1.25rem; }
-      .amount-input { font-size: 1.2rem; padding-right: 110px; }
-    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#030306;--card:#0d0d14;--input:#111118;--border:#1a1a28;--text:#fff;--dim:#8585a0;--muted:#4a4a60;--accent:#00e5ff;--accent2:#6366f1;--success:#22c55e;--error:#ef4444;--warning:#f59e0b;--grad:linear-gradient(135deg,#00e5ff,#6366f1,#22c55e)}
+    body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+    .card{width:100%;max-width:440px;background:var(--card);border:1px solid var(--border);border-radius:24px;overflow:hidden;box-shadow:0 25px 80px rgba(0,0,0,.5)}
+    .header{padding:1.25rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .title{display:flex;align-items:center;gap:10px;font-size:1.2rem;font-weight:700}
+    .badge{padding:4px 10px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:6px;font-size:.65rem;font-weight:700;color:var(--warning);text-transform:uppercase}
+    .body{padding:1.5rem}
+    .group{margin-bottom:1rem}
+    .label{display:flex;justify-content:space-between;margin-bottom:8px;font-size:.75rem;font-weight:600;color:var(--dim);text-transform:uppercase}
+    .balance{font-family:'JetBrains Mono',monospace;color:var(--text)}
+    .select-wrap{position:relative}
+    select{width:100%;padding:1rem;padding-right:2.5rem;background:var(--input);border:1px solid var(--border);border-radius:14px;color:var(--text);font-family:inherit;font-size:.95rem;cursor:pointer;appearance:none}
+    select:focus{outline:none;border-color:var(--accent)}
+    select:disabled{opacity:.5}
+    .arrow{position:absolute;right:1rem;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+    .swap-row{display:flex;justify-content:center;margin:-.25rem 0 .75rem}
+    .swap-btn{width:42px;height:42px;background:var(--bg);border:2px solid var(--border);border-radius:12px;color:var(--dim);font-size:1.1rem;cursor:pointer;transition:all .3s}
+    .swap-btn:hover{border-color:var(--accent);color:var(--accent);transform:rotate(180deg)}
+    .swap-btn:disabled{opacity:.4;transform:none}
+    .amount-wrap{position:relative}
+    .amount-input{width:100%;padding:1rem;padding-right:115px;background:var(--input);border:1px solid var(--border);border-radius:14px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:1.4rem;font-weight:600}
+    .amount-input:focus{outline:none;border-color:var(--accent)}
+    .amount-input:disabled{opacity:.5}
+    .amount-input::placeholder{color:var(--muted);font-weight:400}
+    .amount-actions{position:absolute;right:.75rem;top:50%;transform:translateY(-50%);display:flex;gap:6px;align-items:center}
+    .max-btn{padding:5px 8px;background:rgba(0,229,255,.1);border:none;border-radius:5px;color:var(--accent);font-size:.65rem;font-weight:700;cursor:pointer}
+    .max-btn:hover{background:rgba(0,229,255,.2)}
+    .token{padding:6px 10px;background:var(--accent2);border-radius:6px;font-size:.8rem;font-weight:700}
+    .info{padding:.875rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.15);border-radius:10px;margin-bottom:1rem;font-size:.8rem;color:var(--warning)}
+    .info a{color:var(--warning)}
+    .error{padding:.875rem;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);border-radius:10px;margin-bottom:1rem;font-size:.85rem;color:var(--error);text-align:center}
+    .progress{padding:1.25rem;background:rgba(0,229,255,.03);border:1px solid rgba(0,229,255,.1);border-radius:14px;margin-bottom:1rem}
+    .progress-bar{height:5px;background:var(--input);border-radius:3px;overflow:hidden;margin-bottom:1.25rem}
+    .progress-fill{height:100%;background:var(--grad);transition:width .5s}
+    .steps{display:flex;justify-content:space-between}
+    .step{display:flex;flex-direction:column;align-items:center;gap:6px}
+    .step-dot{width:32px;height:32px;background:var(--input);border:2px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700}
+    .step.active .step-dot{border-color:var(--accent);background:rgba(0,229,255,.15);color:var(--accent);animation:pulse 1.2s infinite}
+    .step.done .step-dot{background:var(--success);border-color:var(--success);color:var(--bg)}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+    .step-label{font-size:.65rem;color:var(--muted);text-transform:uppercase}
+    .step.active .step-label,.step.done .step-label{color:var(--text)}
+    .status-msg{text-align:center;margin-top:1rem;font-size:.8rem;color:var(--dim)}
+    .btn{width:100%;padding:1.1rem;background:var(--grad);border:none;border-radius:14px;color:var(--bg);font-family:inherit;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .3s}
+    .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,229,255,.3)}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .btn.secondary{background:var(--input);border:2px solid var(--border);color:var(--text)}
+    .btn.secondary:hover{border-color:var(--accent);box-shadow:none}
+    .spinner{width:18px;height:18px;border:3px solid rgba(0,0,0,.2);border-top-color:var(--bg);border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .success{text-align:center;padding:2rem 1rem}
+    .success-icon{width:80px;height:80px;background:var(--success);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 1.25rem;animation:pop .5s}
+    @keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+    .success h3{font-size:1.3rem;color:var(--success);margin-bottom:.5rem}
+    .success p{color:var(--dim);margin-bottom:1.25rem}
+    .tx-link{display:block;padding:10px 16px;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.15);border-radius:10px;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:.8rem;text-decoration:none;margin-bottom:.75rem}
+    .tx-link:hover{background:rgba(0,229,255,.15)}
+    .connect{text-align:center;padding:2.5rem 1rem}
+    .connect-icon{font-size:4rem;margin-bottom:1rem}
+    .connect h3{font-size:1.2rem;margin-bottom:.5rem}
+    .connect p{color:var(--dim);margin-bottom:1.5rem}
+    .footer{padding:.875rem 1.25rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
+    .footer a{color:var(--accent);text-decoration:none}
+    .server{position:fixed;top:1rem;right:1rem;display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-size:.8rem;color:var(--dim)}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+    .dot.online{background:var(--success);box-shadow:0 0 10px var(--success)}
+    .dot.offline{background:var(--error)}
+    .wallet-btn{position:fixed;top:1rem;left:1rem;padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:.8rem;cursor:pointer}
+    .wallet-btn.connected{border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.1)}
   </style>
 </head>
 <body>
-  <!-- Background -->
-  <div class="bg-effects">
-    <div class="bg-gradient"></div>
-    <div class="bg-grid"></div>
-    <div class="particles" id="particles"></div>
-  </div>
-
-  <div class="app-container">
-    <!-- Header -->
-    <header class="header">
-      <div class="header-inner">
-        <a href="/" class="logo">
-          <div class="logo-icon">⚡</div>
-          <div class="logo-text">Flux<span>Shift</span></div>
-        </a>
-        <div class="header-right">
-          <div class="server-status">
-            <div class="status-dot" id="statusDot"></div>
-            <span id="statusText">Conectando...</span>
-          </div>
-          <button class="wallet-btn" id="walletBtn">Conectar</button>
-        </div>
+  <div class="server"><div class="dot" id="dot"></div><span id="serverText">Verificando...</span></div>
+  <button class="wallet-btn" id="walletBtn" onclick="connectWallet()">Conectar</button>
+  
+  <div class="card">
+    <div class="header">
+      <div class="title">
+        <svg width="28" height="28" viewBox="0 0 32 32"><circle cx="16" cy="16" r="16" fill="#2775CA"/><path d="M20.5 18.5c0-2.1-1.3-2.8-3.8-3.1-1.8-.3-2.2-.7-2.2-1.5 0-.8.6-1.3 1.8-1.3 1.1 0 1.7.4 2 1.2h2c-.3-1.7-1.5-2.7-3.2-3v-1.5h-1.8v1.5c-1.8.3-3 1.5-3 3.2 0 2 1.2 2.8 3.7 3.1 1.9.3 2.3.8 2.3 1.6 0 .9-.7 1.5-2 1.5-1.4 0-2-.6-2.3-1.5h-2c.3 1.8 1.5 2.9 3.5 3.2v1.5h1.8V21c1.9-.3 3.2-1.5 3.2-3.5z" fill="#fff"/></svg>
+        Bridge USDC
       </div>
-    </header>
-
-    <!-- Main -->
-    <main class="main-content">
-      <div class="bridge-card">
-        <div class="card-header">
-          <div class="card-title">
-            <svg class="usdc-logo" viewBox="0 0 32 32" fill="none">
-              <circle cx="16" cy="16" r="16" fill="#2775CA"/>
-              <path d="M20.5 18.5c0-2.1-1.3-2.8-3.8-3.1-1.8-.3-2.2-.7-2.2-1.5 0-.8.6-1.3 1.8-1.3 1.1 0 1.7.4 2 1.2h2c-.3-1.7-1.5-2.7-3.2-3v-1.5h-1.8v1.5c-1.8.3-3 1.5-3 3.2 0 2 1.2 2.8 3.7 3.1 1.9.3 2.3.8 2.3 1.6 0 .9-.7 1.5-2 1.5-1.4 0-2-.6-2.3-1.5h-2c.3 1.8 1.5 2.9 3.5 3.2v1.5h1.8V21c1.9-.3 3.2-1.5 3.2-3.5z" fill="white"/>
-            </svg>
-            Bridge USDC
-          </div>
-          <span class="network-badge">Testnet</span>
-        </div>
-        <div class="card-body" id="cardBody"></div>
-        <div class="card-footer">
-          <span>Powered by Circle CCTP</span>
-          <a href="https://developers.circle.com/bridge-kit" target="_blank" rel="noopener">Docs ↗</a>
-        </div>
-      </div>
-    </main>
+      <span class="badge">Testnet</span>
+    </div>
+    <div class="body" id="body"></div>
+    <div class="footer">
+      <span>Powered by Circle CCTP</span>
+      <a href="https://faucet.circle.com" target="_blank">Faucet ↗</a>
+    </div>
   </div>
 
   <script>
-    // =============================================
-    // ⚠️ CONFIGURAÇÃO IMPORTANTE
-    // =============================================
-    // Altere esta URL para o seu backend no Render
-    // Exemplo: https://fluxshift-api.onrender.com
-    
-    const API_URL = "https://fluxshift-api.onrender.com";
-    
-    // =============================================
-    // CHAINS SUPORTADAS
-    // =============================================
+    const API = "https://fluxshift-api.onrender.com";
     const CHAINS = {
-      "base-sepolia": { name: "Base Sepolia", icon: "🔵", chainId: "0x14a34", usdc: "0x036CbD53842c5426634e7929541eC2318f3dCF7e", explorer: "https://sepolia.basescan.org" },
-      "ethereum-sepolia": { name: "Ethereum Sepolia", icon: "⟠", chainId: "0xaa36a7", usdc: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", explorer: "https://sepolia.etherscan.io" },
-      "arbitrum-sepolia": { name: "Arbitrum Sepolia", icon: "🔷", chainId: "0x66eee", usdc: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d", explorer: "https://sepolia.arbiscan.io" },
-      "optimism-sepolia": { name: "Optimism Sepolia", icon: "🔴", chainId: "0xaa37dc", usdc: "0x5fd84259d66Cd46123540766Be93DFE6D43130D7", explorer: "https://sepolia-optimism.etherscan.io" },
-      "polygon-amoy": { name: "Polygon Amoy", icon: "⬡", chainId: "0x13882", usdc: "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582", explorer: "https://amoy.polygonscan.com" },
-      "avalanche-fuji": { name: "Avalanche Fuji", icon: "🔺", chainId: "0xa869", usdc: "0x5425890298aed601595a70AB815c96711a31Bc65", explorer: "https://testnet.snowtrace.io" }
+      "base-sepolia": {name:"Base Sepolia",icon:"🔵",chainId:"0x14a34",usdc:"0x036CbD53842c5426634e7929541eC2318f3dCF7e",explorer:"https://sepolia.basescan.org",rpc:"https://sepolia.base.org"},
+      "ethereum-sepolia": {name:"Ethereum Sepolia",icon:"⟠",chainId:"0xaa36a7",usdc:"0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",explorer:"https://sepolia.etherscan.io",rpc:"https://rpc.sepolia.org"},
+      "arbitrum-sepolia": {name:"Arbitrum Sepolia",icon:"🔷",chainId:"0x66eee",usdc:"0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",explorer:"https://sepolia.arbiscan.io",rpc:"https://sepolia-rollup.arbitrum.io/rpc"},
+      "optimism-sepolia": {name:"Optimism Sepolia",icon:"🔴",chainId:"0xaa37dc",usdc:"0x5fd84259d66Cd46123540766Be93DFE6D43130D7",explorer:"https://sepolia-optimism.etherscan.io",rpc:"https://sepolia.optimism.io"}
     };
 
-    // =============================================
-    // ESTADO
-    // =============================================
-    let state = {
-      wallet: null,
-      balance: "0.00",
-      fromChain: "base-sepolia",
-      toChain: "ethereum-sepolia",
-      amount: "",
-      status: "idle",
-      step: 0,
-      error: "",
-      txLinks: [],
-      serverOnline: false
-    };
+    let S = {wallet:null,balance:"0.00",from:"base-sepolia",to:"ethereum-sepolia",amount:"",status:"idle",step:0,error:"",links:[],online:false,msg:""};
 
-    // =============================================
-    // INICIALIZAÇÃO
-    // =============================================
-    function init() {
-      createParticles();
-      document.getElementById("walletBtn").onclick = connectWallet;
-      checkServer();
-      setInterval(checkServer, 15000);
-      render();
-      setupMetaMaskListeners();
+    async function checkServer(){
+      const d=document.getElementById("dot"),t=document.getElementById("serverText");
+      try{
+        const r=await fetch(API+"/api/status",{signal:AbortSignal.timeout(10000)});
+        if(r.ok){S.online=true;d.className="dot online";t.textContent="Online";}
+        else throw 0;
+      }catch{S.online=false;d.className="dot offline";t.textContent="Offline";}
     }
 
-    function createParticles() {
-      const container = document.getElementById("particles");
-      for (let i = 0; i < 35; i++) {
-        const p = document.createElement("div");
-        p.className = "particle";
-        p.style.left = Math.random() * 100 + "%";
-        p.style.top = Math.random() * 100 + "%";
-        p.style.animationDelay = Math.random() * 8 + "s";
-        p.style.animationDuration = (5 + Math.random() * 5) + "s";
-        container.appendChild(p);
-      }
-    }
-
-    function setupMetaMaskListeners() {
-      if (typeof window.ethereum !== "undefined") {
-        window.ethereum.on("accountsChanged", accounts => {
-          state.wallet = accounts[0] || null;
-          state.balance = "0.00";
-          fetchBalance().then(render);
-          updateWalletBtn();
-        });
-        window.ethereum.on("chainChanged", () => fetchBalance().then(render));
-      }
-    }
-
-    // =============================================
-    // SERVIDOR
-    // =============================================
-    async function checkServer() {
-      const dot = document.getElementById("statusDot");
-      const text = document.getElementById("statusText");
-      
-      dot.className = "status-dot checking";
-      text.textContent = "Verificando...";
-
-      try {
-        const res = await fetch(API_URL + "/api/status", { 
-          method: "GET",
-          headers: { "Accept": "application/json" }
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          state.serverOnline = data.status === "online";
-          dot.className = "status-dot online";
-          text.textContent = "Online";
-        } else {
-          throw new Error("Status não OK");
-        }
-      } catch (e) {
-        state.serverOnline = false;
-        dot.className = "status-dot offline";
-        text.textContent = "Offline";
-      }
-    }
-
-    // =============================================
-    // CARTEIRA
-    // =============================================
-    async function connectWallet() {
-      if (typeof window.ethereum === "undefined") {
-        alert("MetaMask não encontrado!\n\nInstale em: https://metamask.io");
-        return;
-      }
-      try {
-        const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-        state.wallet = accounts[0];
-        await fetchBalance();
+    async function connectWallet(){
+      if(!window.ethereum){alert("Instale MetaMask!");return;}
+      try{
+        const a=await window.ethereum.request({method:"eth_requestAccounts"});
+        S.wallet=a[0];
         updateWalletBtn();
+        await getBalance();
         render();
-      } catch (e) {
-        console.error("Erro conectando:", e);
-      }
+      }catch(e){console.error(e);}
     }
 
-    function updateWalletBtn() {
-      const btn = document.getElementById("walletBtn");
-      if (state.wallet) {
-        btn.className = "wallet-btn connected";
-        btn.textContent = state.wallet.slice(0,6) + "..." + state.wallet.slice(-4);
-      } else {
-        btn.className = "wallet-btn";
-        btn.textContent = "Conectar";
-      }
+    function updateWalletBtn(){
+      const b=document.getElementById("walletBtn");
+      if(S.wallet){b.className="wallet-btn connected";b.textContent=S.wallet.slice(0,6)+"..."+S.wallet.slice(-4);}
+      else{b.className="wallet-btn";b.textContent="Conectar";}
     }
 
-    async function fetchBalance() {
-      if (!state.wallet) return;
-      const chain = CHAINS[state.fromChain];
-      if (!chain) return;
-      try {
-        const data = "0x70a08231000000000000000000000000" + state.wallet.slice(2);
-        const result = await window.ethereum.request({
-          method: "eth_call",
-          params: [{ to: chain.usdc, data }, "latest"]
+    async function getBalance(){
+      if(!S.wallet)return;
+      const c=CHAINS[S.from];
+      try{
+        const data="0x70a08231000000000000000000000000"+S.wallet.slice(2).toLowerCase();
+        // Tentar via RPC direto
+        const res=await fetch(c.rpc,{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({jsonrpc:"2.0",method:"eth_call",params:[{to:c.usdc,data},"latest"],id:1})
         });
-        state.balance = (parseInt(result, 16) / 1e6).toFixed(2);
-      } catch { state.balance = "0.00"; }
-    }
-
-    // =============================================
-    // BRIDGE
-    // =============================================
-    function swapChains() {
-      [state.fromChain, state.toChain] = [state.toChain, state.fromChain];
-      fetchBalance().then(render);
-    }
-
-    function useMax() {
-      state.amount = state.balance;
+        const json=await res.json();
+        if(json.result&&json.result!=="0x"){
+          S.balance=(parseInt(json.result,16)/1e6).toFixed(2);
+        }else{S.balance="0.00";}
+      }catch{S.balance="0.00";}
       render();
     }
 
-    async function executeBridge() {
-      if (!state.serverOnline) {
-        state.error = "Servidor offline. Tente novamente em alguns instantes.";
-        render();
-        return;
-      }
-      if (!state.amount || parseFloat(state.amount) <= 0) {
-        state.error = "Digite uma quantidade válida";
-        render();
-        return;
-      }
-      if (parseFloat(state.amount) > parseFloat(state.balance)) {
-        state.error = "Saldo insuficiente";
-        render();
-        return;
-      }
+    function swap(){[S.from,S.to]=[S.to,S.from];getBalance();}
+    function max(){S.amount=S.balance;render();}
 
-      state.status = "processing";
-      state.step = 1;
-      state.error = "";
-      state.txLinks = [];
-      render();
+    async function bridge(){
+      if(!S.online){S.error="Servidor offline. Aguarde 1 min para acordar.";render();return;}
+      if(!S.amount||parseFloat(S.amount)<=0){S.error="Digite uma quantidade";render();return;}
+      if(parseFloat(S.amount)>parseFloat(S.balance)){S.error="Saldo insuficiente. Obtenha USDC: faucet.circle.com";render();return;}
+      if(S.from===S.to){S.error="Selecione redes diferentes";render();return;}
 
-      // Simular progresso enquanto aguarda
-      const progressInterval = setInterval(() => {
-        if (state.status === "processing" && state.step < 3) {
-          state.step++;
-          render();
-        }
-      }, 4000);
+      S.status="processing";S.step=1;S.error="";S.links=[];S.msg="Aprovando USDC...";render();
 
-      try {
-        const response = await fetch(API_URL + "/api/bridge", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fromChain: state.fromChain,
-            toChain: state.toChain,
-            amount: state.amount
-          })
+      try{
+        const r=await fetch(API+"/api/bridge",{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({fromChain:S.from,toChain:S.to,amount:S.amount}),
+          signal:AbortSignal.timeout(300000)
         });
-
-        const data = await response.json();
-        clearInterval(progressInterval);
-
-        if (data.success) {
-          state.status = "success";
-          state.step = 3;
-          state.txLinks = (data.steps || [])
-            .filter(s => s.explorerUrl)
-            .map(s => ({ name: s.name, url: s.explorerUrl }));
-        } else {
-          throw new Error(data.error || "Erro na transferência");
+        const d=await r.json();
+        console.log("Resposta:",d);
+        
+        if(d.success){
+          S.status="success";S.step=3;
+          S.links=(d.steps||[]).filter(s=>s.explorerUrl).map(s=>({name:s.name,url:s.explorerUrl}));
+          setTimeout(getBalance,2000);
+        }else{
+          throw new Error(d.error||"Erro");
         }
-      } catch (e) {
-        clearInterval(progressInterval);
-        state.status = "error";
-        state.error = e.message || "Erro ao processar transferência";
+      }catch(e){
+        S.status="error";
+        S.error=e.name==="TimeoutError"?"Timeout. Verifique no explorer.":e.message;
       }
       render();
     }
 
-    function resetBridge() {
-      state.status = "idle";
-      state.step = 0;
-      state.amount = "";
-      state.error = "";
-      state.txLinks = [];
-      fetchBalance().then(render);
-    }
+    function reset(){S.status="idle";S.step=0;S.amount="";S.error="";S.links=[];S.msg="";getBalance();}
 
-    // =============================================
-    // RENDER
-    // =============================================
-    function render() {
-      const container = document.getElementById("cardBody");
-      const fromChain = CHAINS[state.fromChain];
-      const toChain = CHAINS[state.toChain];
+    function render(){
+      const B=document.getElementById("body");
+      const fc=CHAINS[S.from],tc=CHAINS[S.to];
 
-      // Não conectado
-      if (!state.wallet) {
-        container.innerHTML = `
-          <div class="connect-prompt">
-            <div class="connect-icon">👛</div>
-            <h3>Conecte sua Carteira</h3>
-            <p>Conecte sua MetaMask para transferir USDC entre blockchains de forma rápida e segura.</p>
-            <button class="primary-btn" onclick="connectWallet()">Conectar MetaMask</button>
-          </div>
-        `;
+      if(!S.wallet){
+        B.innerHTML=`<div class="connect"><div class="connect-icon">👛</div><h3>Conecte sua Carteira</h3><p>Conecte MetaMask para transferir USDC entre redes.</p><button class="btn" onclick="connectWallet()">Conectar MetaMask</button></div>`;
         return;
       }
 
-      // Sucesso
-      if (state.status === "success") {
-        const linksHtml = state.txLinks.length > 0
-          ? state.txLinks.map(tx => `<a class="tx-link" href="${tx.url}" target="_blank" rel="noopener">${tx.name} → Ver no Explorer ↗</a>`).join("")
-          : '<span style="color:var(--text-muted);font-size:0.9rem">Transações processadas com sucesso</span>';
-
-        container.innerHTML = `
-          <div class="success-section">
-            <div class="success-icon">✓</div>
-            <h3>Transferência Concluída!</h3>
-            <p>${state.amount} USDC de ${fromChain.name} para ${toChain.name}</p>
-            <div class="tx-links">${linksHtml}</div>
-            <button class="secondary-btn" onclick="resetBridge()">Nova Transferência</button>
-          </div>
-        `;
+      if(S.status==="success"){
+        const links=S.links.length?S.links.map(l=>`<a class="tx-link" href="${l.url}" target="_blank">${l.name} → Explorer ↗</a>`).join(""):`<a class="tx-link" href="${tc.explorer}/address/${S.wallet}" target="_blank">Ver carteira ↗</a>`;
+        B.innerHTML=`<div class="success"><div class="success-icon">✓</div><h3>Concluído!</h3><p>${S.amount} USDC de ${fc.name} para ${tc.name}</p>${links}<button class="btn secondary" onclick="reset()">Nova Transferência</button></div>`;
         return;
       }
 
-      // Formulário
-      const chainOptions = Object.entries(CHAINS).map(([id, c]) => 
-        `<option value="${id}">${c.icon} ${c.name}</option>`
-      ).join("");
+      const opts=Object.entries(CHAINS).map(([k,v])=>`<option value="${k}">${v.icon} ${v.name}</option>`).join("");
+      const proc=S.status==="processing";
+      const can=S.amount&&parseFloat(S.amount)>0&&parseFloat(S.amount)<=parseFloat(S.balance)&&S.online&&S.from!==S.to;
 
-      const isProcessing = state.status === "processing";
-      const canBridge = state.amount && parseFloat(state.amount) > 0 && parseFloat(state.amount) <= parseFloat(state.balance) && state.serverOnline;
+      let info="";
+      if(!S.online)info=`<div class="info">⚠️ Servidor offline. Aguarde ~1 min para acordar (plano gratuito hiberna).</div>`;
+      else if(parseFloat(S.balance)===0)info=`<div class="info">💡 Sem USDC nesta rede. Obtenha em: <a href="https://faucet.circle.com" target="_blank">faucet.circle.com</a></div>`;
 
-      let progressHtml = "";
-      if (isProcessing) {
-        const steps = ["Aprovar", "Burn", "Mint"];
-        progressHtml = `
-          <div class="progress-section">
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${(state.step / 3) * 100}%"></div>
-            </div>
-            <div class="progress-steps">
-              ${steps.map((name, i) => {
-                const stepNum = i + 1;
-                const isCompleted = state.step > stepNum;
-                const isActive = state.step === stepNum;
-                return `
-                  <div class="progress-step ${isCompleted ? 'completed' : ''} ${isActive ? 'active' : ''}">
-                    <div class="step-indicator">${isCompleted ? '✓' : stepNum}</div>
-                    <span class="step-label">${name}</span>
-                  </div>
-                `;
-              }).join("")}
-            </div>
-          </div>
-        `;
+      let prog="";
+      if(proc){
+        const steps=["Aprovar","Burn","Mint"];
+        prog=`<div class="progress"><div class="progress-bar"><div class="progress-fill" style="width:${S.step/3*100}%"></div></div><div class="steps">${steps.map((n,i)=>{const num=i+1;return`<div class="step ${S.step>num?"done":""} ${S.step===num?"active":""}"><div class="step-dot">${S.step>num?"✓":num}</div><span class="step-label">${n}</span></div>`;}).join("")}</div><div class="status-msg">${S.msg}</div></div>`;
       }
 
-      container.innerHTML = `
-        <div class="form-group">
-          <label class="form-label">De (Origem)</label>
-          <div class="select-wrapper">
-            <select class="chain-select" id="fromChain" ${isProcessing ? 'disabled' : ''} onchange="state.fromChain = this.value; fetchBalance().then(render);">
-              ${chainOptions}
-            </select>
-            <span class="select-arrow">▼</span>
-          </div>
-        </div>
-
-        <div class="swap-container">
-          <button class="swap-btn" onclick="swapChains()" ${isProcessing ? 'disabled' : ''}>⇅</button>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Para (Destino)</label>
-          <div class="select-wrapper">
-            <select class="chain-select" id="toChain" ${isProcessing ? 'disabled' : ''} onchange="state.toChain = this.value; render();">
-              ${chainOptions}
-            </select>
-            <span class="select-arrow">▼</span>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <span>Quantidade</span>
-            <span class="balance-display">Saldo: ${state.balance} USDC</span>
-          </label>
-          <div class="amount-container">
-            <input type="number" class="amount-input" placeholder="0.00" value="${state.amount}" 
-                   oninput="state.amount = this.value" ${isProcessing ? 'disabled' : ''}>
-            <div class="amount-actions">
-              <button class="max-btn" onclick="useMax()" ${isProcessing ? 'disabled' : ''}>MAX</button>
-              <span class="token-badge">USDC</span>
-            </div>
-          </div>
-        </div>
-
-        ${progressHtml}
-        ${state.error ? `<div class="error-message">${state.error}</div>` : ''}
-
-        <button class="primary-btn" onclick="executeBridge()" ${isProcessing || !canBridge ? 'disabled' : ''}>
-          ${isProcessing ? '<span class="spinner"></span>Processando...' : 'Bridge USDC'}
-        </button>
+      B.innerHTML=`
+        ${info}
+        <div class="group"><label class="label">De (Origem)</label><div class="select-wrap"><select id="fromSel" ${proc?"disabled":""} onchange="S.from=this.value;getBalance()">${opts}</select><span class="arrow">▼</span></div></div>
+        <div class="swap-row"><button class="swap-btn" onclick="swap()" ${proc?"disabled":""}>⇅</button></div>
+        <div class="group"><label class="label">Para (Destino)</label><div class="select-wrap"><select id="toSel" ${proc?"disabled":""} onchange="S.to=this.value;render()">${opts}</select><span class="arrow">▼</span></div></div>
+        <div class="group"><label class="label"><span>Quantidade</span><span class="balance">Saldo: ${S.balance} USDC</span></label><div class="amount-wrap"><input type="number" class="amount-input" placeholder="0.00" value="${S.amount}" oninput="S.amount=this.value" ${proc?"disabled":""}><div class="amount-actions"><button class="max-btn" onclick="max()" ${proc?"disabled":""}>MAX</button><span class="token">USDC</span></div></div></div>
+        ${prog}
+        ${S.error?`<div class="error">${S.error}</div>`:""}
+        <button class="btn" onclick="bridge()" ${proc||!can?"disabled":""}>${proc?`<span class="spinner"></span>Processando...`:"Bridge USDC"}</button>
       `;
-
-      // Setar valores dos selects
-      document.getElementById("fromChain").value = state.fromChain;
-      document.getElementById("toChain").value = state.toChain;
+      document.getElementById("fromSel").value=S.from;
+      document.getElementById("toSel").value=S.to;
     }
 
-    // Iniciar
-    init();
+    // Init
+    checkServer();
+    setInterval(checkServer,30000);
+    render();
+    if(window.ethereum){
+      window.ethereum.on("accountsChanged",a=>{S.wallet=a[0]||null;S.balance="0.00";if(S.wallet)getBalance();updateWalletBtn();render();});
+      window.ethereum.on("chainChanged",()=>getBalance());
+    }
   </script>
 </body>
 </html>
